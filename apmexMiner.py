@@ -3,9 +3,6 @@ from bs4 import BeautifulSoup
 import tweepy as tw
 import config
 from datetime import datetime
-import random
-import string
-import os
 
 
 def sendTweet(content):
@@ -14,19 +11,6 @@ def sendTweet(content):
     auth.set_access_token(config.access_token, config.access_token_secret)
     api = tw.API(auth, wait_on_rate_limit=True)
 
-    # Get the image
-    # request = requests.get(url, stream=True)
-    # filename = ''.join(random.choice(string.ascii_lowercase) for i in range(8))
-    # if request.status_code == 200:
-    #     with open(filename, 'wb') as image:
-    #         for chunk in request:
-    #             image.write(chunk)
-    #
-    #     api.update_with_media(filename, status=content)
-    #     os.remove(filename)
-    # else:
-    #     api.update_status(content)
-
     # Post the tweet
     api.update_status(content)
 
@@ -34,9 +18,8 @@ def sendTweet(content):
 def dataCollection(url):
     # Results
     result = ""
+
     # Get the data
-    # data = requests.get("https://www.apmex.com/category/25457/1-oz-apmex-silver-bars?sortby=priceasc")
-    # data = requests.get("https://www.apmex.com/category/25057/1-oz-apmex-silver-rounds?sortby=priceasc&f_bulliontype=round&page=1")
     data = requests.get(url)
 
     # Load data into bs4
