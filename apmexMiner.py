@@ -15,7 +15,7 @@ def sendTweet(content):
     api.update_status(content)
 
 
-def dataCollection(url):
+def dataCollection(category, url):
     # Results
     result = ""
 
@@ -48,15 +48,16 @@ def dataCollection(url):
         tds = trs[1].find_all('td')
         qty_two = " (" + tds[0].text.replace(" ", "") + ") " + tds[1].text.replace(" ", "")
 
-        result = title + "\r\n" + qty_one + "\r\n" + qty_two + "\r\nAutomated at: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        result = "Cheapest " + category + ": " + title + "\r\n" + qty_one + "\r\n" + qty_two + "\r\nAutomated at: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
     return result
 
 
-urls = ["https://www.apmex.com/category/25457/1-oz-apmex-silver-bars?sortby=priceasc",
-        "https://www.apmex.com/category/25057/1-oz-apmex-silver-rounds?sortby=priceasc&f_bulliontype=round&page=1",
-        "https://www.apmex.com/category/19110/apmex-gold-bars-rounds?sortby=priceasc&f_bulliontype=bar%2cround&page=1&f_productoz=1+oz"]
+urls = {"Apmex Silver Bar": "https://www.apmex.com/category/25457/1-oz-apmex-silver-bars?sortby=priceasc",
+        "Apmex Silver Round": "https://www.apmex.com/category/25057/1-oz-apmex-silver-rounds?sortby=priceasc&f_bulliontype=round&page=1",
+        "Apmex Gold": "https://www.apmex.com/category/19110/apmex-gold-bars-rounds?sortby=priceasc&f_bulliontype=bar%2cround&page=1&f_productoz=1+oz",
+        "Best Seller": "https://www.apmex.com/category/10002/gold-silver-platinum-palladium-top-picks?sortby=priceasc&f_metalname=silver%2cgold&page=1&f_bulliontype=bar%2cround"}
 
-for url in urls:
-    tweet = dataCollection(url)
+for category, url in urls.items():
+    tweet = dataCollection(category, url)
     sendTweet(tweet)
