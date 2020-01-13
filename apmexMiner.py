@@ -3,21 +3,34 @@ from bs4 import BeautifulSoup
 import tweepy as tw
 import config
 from datetime import datetime
+import random
+import string
+import os
 
 
-def sendTweet(content):
+def send_tweet(content, image_url):
     # Authenticate
     auth = tw.OAuthHandler(config.consumer_key, config.consumer_secret)
     auth.set_access_token(config.access_token, config.access_token_secret)
     api = tw.API(auth, wait_on_rate_limit=True)
 
-    # Post the tweet
-    api.update_status(content)
+    # Get the image
+    request = requests.get(image_url, stream=True)
+    filename = ''.join(random.choice(string.ascii_lowercase) for i in range(8)) + ".jpg"  # Generate a random file name
+    if request.status_code == 200:  # If we successfully get the image
+        with open(filename, 'wb') as image:
+            for chunk in request:
+                image.write(chunk)
+
+        api.update_with_media(filename, status=content)  # Post the tweet and image
+        os.remove(filename)  # Delete the image after tweeting.
+    else:  # If we don't get the image
+        api.update_status(content)  # Tweet without the image
 
 
-def dataCollection(category, url):
-    # Results
+def data_collection(category, url):
     result = ""
+    the_image_url = ""
 
     # Get the data
     data = requests.get(url)
@@ -48,9 +61,20 @@ def dataCollection(category, url):
         tds = trs[1].find_all('td')
         qty_two = " (" + tds[0].text.replace(" ", "") + ") " + tds[1].text.replace(" ", "")
 
-        result = "Cheapest " + category + ": " + title + "\r\n" + qty_one + "\r\n" + qty_two + "\r\nAutomated at: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        cheapest_product.find_all('a')
+        for link in cheapest_product.find_all('a'):
+            if link.get('href'):
+                # print(link)
+                image_div = link.find('div', {'class': 'mod-product-img'})
+                if (image_div and image_div.find('img')):
+                    asdf = image_div.find('img')
+                    the_image_url = asdf.get('src').split('&width')
 
-    return result
+                product_uri = link.get('href')
+
+        result = "Cheapest " + category + ": " + title + "\r\n" + qty_one + "\r\n" + qty_two + "\r\nhttps://www.apmex.com" + product_uri + "\r\nAutomated at: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+
+    return result, the_image_url[0]
 
 
 urls = {"Apmex Silver Bar": "https://www.apmex.com/category/25457/1-oz-apmex-silver-bars?sortby=priceasc",
@@ -59,5 +83,5 @@ urls = {"Apmex Silver Bar": "https://www.apmex.com/category/25457/1-oz-apmex-sil
         "Best Seller": "https://www.apmex.com/category/10002/gold-silver-platinum-palladium-top-picks?sortby=priceasc&f_metalname=silver%2cgold&page=1&f_bulliontype=bar%2cround"}
 
 for category, url in urls.items():
-    tweet = dataCollection(category, url)
-    sendTweet(tweet)
+    tweet, image_url = data_collection(category, url)
+    send_tweet(tweet, image_url)
