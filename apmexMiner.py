@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import tweepy as tw
-import config
 from datetime import datetime
 import random
 import string
@@ -14,7 +13,7 @@ def send_tweet(content, image_url):
     auth.set_access_token(config.access_token, config.access_token_secret)
     api = tw.API(auth, wait_on_rate_limit=True)
 
-    # Get the image
+    # Get the image and tweet
     request = requests.get(image_url, stream=True)
     filename = ''.join(random.choice(string.ascii_lowercase) for i in range(8)) + ".jpg"  # Generate a random file name
     if request.status_code == 200:  # If we successfully get the image
@@ -31,6 +30,8 @@ def send_tweet(content, image_url):
 def data_collection(category, url):
     result = ""
     the_image_url = ""
+    quantity_text = ""
+    hash_tags = " #APMEX #gold #silver #invest "
 
     # Get the data
     data = requests.get(url)
@@ -55,11 +56,9 @@ def data_collection(category, url):
 
         trs = prices.find_all('tr')
 
-        tds = trs[0].find_all('td')
-        qty_one = " (" + tds[0].text.replace(" ", "") + ") " + tds[1].text.replace(" ", "")
-
-        tds = trs[1].find_all('td')
-        qty_two = " (" + tds[0].text.replace(" ", "") + ") " + tds[1].text.replace(" ", "")
+        for tr in trs:
+            tds_1 = tr.find_all('td')
+            quantity_text += "\r\n(" + tds_1[0].text.replace(" ", "") + ") " + tds_1[1].text.replace(" ", "")
 
         cheapest_product.find_all('a')
         for link in cheapest_product.find_all('a'):
@@ -72,7 +71,13 @@ def data_collection(category, url):
 
                 product_uri = link.get('href')
 
-        result = "Cheapest " + category + ": " + title + "\r\n" + qty_one + "\r\n" + qty_two + "\r\nhttps://www.apmex.com" + product_uri + "\r\nAutomated at: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        result = "Cheapest " + category + ": " \
+                 + title + quantity_text \
+                 + "\r\nhttps://www.apmex.com" + product_uri \
+                 + "\r\nAutomated at: " \
+                 + datetime.now().strftime("%m/%d/%Y %H:%M:%S") \
+                 + hash_tags
+
 
     return result, the_image_url[0]
 
