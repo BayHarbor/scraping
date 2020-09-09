@@ -1,5 +1,6 @@
 import tweepy as tw
-import config # File with the creds
+from silverPrices import config
+
 
 def sendTweet(content):
     # Authenticate
