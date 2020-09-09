@@ -1,5 +1,5 @@
 import smtplib
-from silverPrices import config
+from config import config
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
